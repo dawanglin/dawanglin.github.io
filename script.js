@@ -2,6 +2,7 @@ let currentInput = '0';
 let operator = null;
 let previousInput = null;
 let shouldResetDisplay = false;
+const ROUNDING_PRECISION = 100000000;
 
 function updateDisplay() {
     const display = document.getElementById('display');
@@ -67,7 +68,7 @@ function calculate() {
     }
     
     // Round to avoid floating point errors
-    result = Math.round(result * 100000000) / 100000000;
+    result = Math.round(result * ROUNDING_PRECISION) / ROUNDING_PRECISION;
     
     currentInput = result.toString();
     operator = null;
