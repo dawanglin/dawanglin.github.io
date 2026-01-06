@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新旧佣金对比计算器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        body {
+            background: #f5f7fa;
+            padding: 30px;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        }
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 28px;
+        }
+        .description {
+            color: #7f8c8d;
+            text-align: center;
+            margin-bottom: 30px;
+            line-height: 1.5;
+        }
+        .input-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        .input-box {
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #34495e;
+            font-size: 15px;
+        }
+        input, select {
+            padding: 14px 16px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border 0.3s;
+        }
+        input:focus, select:focus {
+            border-color: #3498db;
+            outline: none;
+        }
+        .buttons {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 14px 30px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin: 0 10px;
+        }
+        button:hover {
+            background: #2980b9;
+        }
+        #resetBtn {
+            background: #95a5a6;
+        }
+        #resetBtn:hover {
+            background: #7f8c8d;
+        }
+        .result {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 25px;
+            margin-top: 30px;
+            border-left: 5px solid #3498db;
+        }
+        .result h2 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+        .result-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+        .result-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+        }
+        .result-label {
+            font-size: 14px;
+            color: #7f8c8d;
+            margin-bottom: 5px;
+        }
+        .result-value {
+            font-size: 22px;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+        .comparison {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        .higher {
+            background: #d5f4e6;
+            color: #27ae60;
+            border: 2px solid #2ecc71;
+        }
+        .lower {
+            background: #fadbd8;
+            color: #e74c3c;
+            border: 2px solid #e74c3c;
+        }
+        .equal {
+            background: #fef9e7;
+            color: #f39c12;
+            border: 2px solid #f39c12;
+        }
+        .details {
+            margin-top: 25px;
+            font-size: 14px;
+            color: #555;
+            line-height: 1.6;
+        }
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px dashed #eee;
+        }
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+        .footnote {
+            margin-top: 25px;
+            font-size: 13px;
+            color: #95a5a6;
+            text-align: center;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>新旧佣金对比计算器</h1>
+        <p class="description">输入订单信息，实时计算新方案与旧方案（23%）的佣金差异</p>
+        
+        <div class="input-group">
+            <div class="input-box">
+                <label for="price">订单价格（元）</label>
+                <input type="number" id="price" min="0" step="0.01" placeholder="例如：50" value="50">
+            </div>
+            <div class="input-box">
+                <label for="distance">配送距离（公里）</label>
+                <input type="number" id="distance" min="0" step="0.1" placeholder="例如：3" value="3">
+            </div>
+            <div class="input-box">
+                <label for="period">配送时段</label>
+                <select id="period">
+                    <option value="普通">普通</option>
+                    <option value="夜间">夜间（21:00-24:00）</option>
+                    <option value="深夜">深夜（00:00-03:00）</option>
+                    <option value="凌晨">凌晨（03:00-06:00）</option>
+                </select>
+            </div>
+            <div class="input-box">
+                <label>操作</label>
+                <div class="buttons">
+                    <button onclick="calculate()">立即计算</button>
+                    <button id="resetBtn" onclick="resetForm()">重置</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="result" id="resultSection" style="display:none;">
+            <h2>计算结果</h2>
+            <div class="result-grid">
+                <div class="result-item">
+                    <div class="result-label">新方案佣金</div>
+                    <div class="result-value" id="newCommission">0.00 元</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">旧方案佣金</div>
+                    <div class="result-value" id="oldCommission">0.00 元</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">差额</div>
+                    <div class="result-value" id="difference">0.00 元</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">差额百分比</div>
+                    <div class="result-value" id="diffPercent">0%</div>
+                </div>
+            </div>
+
+            <div class="comparison" id="comparisonText">
+                <!-- 动态插入 -->
+            </div>
+
+            <div class="details">
+                <h3>费用明细（新方案）</h3>
+                <div class="detail-row">
+                    <span>距离费</span>
+                    <span id="distFee">0 元</span>
+                </div>
+                <div class="detail-row">
+                    <span>价格附加费</span>
+                    <span id="priceFee">0 元</span>
+                </div>
+                <div class="detail-row">
+                    <span>时段费</span>
+                    <span id="periodFee">0 元</span>
+                </div>
+                <div class="detail-row">
+                    <span>基础部分小计</span>
+                    <span id="baseSum">0 元</span>
+                </div>
+                <div class="detail-row">
+                    <span>额外附加费（6.2%）</span>
+                    <span id="extraFee">0 元</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="footnote">
+            注：旧方案佣金 = 订单价格 × 23%；新方案佣金 = 距离费 + 价格附加费 + 时段费 + 订单价格 × 6.2%
+        </div>
+    </div>
+
+    <script>
+        // 距离费函数
+        function yDistance(x) {
+            if (x <= 2.5) return 3;
+            if (x <= 4) return 3 + 2 * (x - 2.5);
+            return 6 + 2.5 * (x - 4);
+        }
+
+        // 价格附加费函数
+        function fPrice(y) {
+            if (y <= 20) return 0;
+            if (y <= 30) return 0.16 * (y - 20);
+            if (y <= 40) return 1.6 + 0.15 * (y - 30);
+            return Math.min(1.6 + 0.15 * (y - 30), 40);
+        }
+
+        // 时段费函数
+        function pPeriod(period) {
+            const map = {
+                '普通': 0,
+                '夜间': 0.5,
+                '深夜': 1.0,
+                '凌晨': 1.5
+            };
+            return map[period] || 0;
+        }
+
+        // 计算函数
+        function calculate() {
+            const price = parseFloat(document.getElementById('price').value);
+            const distance = parseFloat(document.getElementById('distance').value);
+            const period = document.getElementById('period').value;
+
+            if (!price || price <= 0 || !distance || distance < 0) {
+                alert('请输入有效的订单价格和配送距离');
+                return;
+            }
+
+            // 计算各项费用
+            const distFee = yDistance(distance);
+            const priceFee = fPrice(price);
+            const periodFee = pPeriod(period);
+            const baseSum = distFee + priceFee + periodFee;
+            const extraFee = price * 0.062;
+
+            const newCommission = baseSum + extraFee;
+            const oldCommission = price * 0.23;
+            const difference = newCommission - oldCommission;
+            const diffPercent = oldCommission ? ((difference / oldCommission) * 100).toFixed(1) : 0;
+
+            // 更新结果显示
+            document.getElementById('newCommission').textContent = newCommission.toFixed(2) + ' 元';
+            document.getElementById('oldCommission').textContent = oldCommission.toFixed(2) + ' 元';
+            document.getElementById('difference').textContent = difference.toFixed(2) + ' 元';
+            document.getElementById('diffPercent').textContent = diffPercent + '%';
+
+            document.getElementById('distFee').textContent = distFee.toFixed(2) + ' 元';
+            document.getElementById('priceFee').textContent = priceFee.toFixed(2) + ' 元';
+            document.getElementById('periodFee').textContent = periodFee.toFixed(2) + ' 元';
+            document.getElementById('baseSum').textContent = baseSum.toFixed(2) + ' 元';
+            document.getElementById('extraFee').textContent = extraFee.toFixed(2) + ' 元';
+
+            // 更新对比提示
+            const comparisonDiv = document.getElementById('comparisonText');
+            let text = '';
+            let cls = '';
+
+            if (difference > 0.01) {
+                text = `📈 新佣金比旧佣金高 ${difference.toFixed(2)} 元（高 ${diffPercent}%）`;
+                cls = 'higher';
+            } else if (difference < -0.01) {
+                text = `📉 新佣金比旧佣金低 ${Math.abs(difference).toFixed(2)} 元（低 ${Math.abs(diffPercent)}%）`;
+                cls = 'lower';
+            } else {
+                text = `⚖️ 新旧佣金基本相等`;
+                cls = 'equal';
+            }
+
+            comparisonDiv.className = 'comparison ' + cls;
+            comparisonDiv.innerHTML = `<div>${text}</div>`;
+
+            // 显示结果区域
+            document.getElementById('resultSection').style.display = 'block';
+        }
+
+        // 重置表单
+        function resetForm() {
+            document.getElementById('price').value = '50';
+            document.getElementById('distance').value = '3';
+            document.getElementById('period').value = '普通';
+            document.getElementById('resultSection').style.display = 'none';
+        }
+
+        // 页面加载后自动计算一次
+        window.onload = calculate;
+    </script>
+</body>
+</html>
